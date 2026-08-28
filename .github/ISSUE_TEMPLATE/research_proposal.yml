@@ -1,0 +1,27 @@
+name: Research proposal
+description: Propose a falsifiable experiment or data improvement
+title: "[Research]: "
+labels: ["research"]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+      description: State the falsifiable research question.
+    validations:
+      required: true
+  - type: textarea
+    id: timing
+    attributes:
+      label: Information timing and data
+      description: Explain sources, vintages, availability timestamps, and leakage controls.
+    validations:
+      required: true
+  - type: textarea
+    id: evaluation
+    attributes:
+      label: Evaluation design
+      description: Describe baselines, costs, folds, holdout, and decision criteria.
+    validations:
+      required: true
+

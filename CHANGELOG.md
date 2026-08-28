@@ -5,5 +5,5 @@
 - Added the complete leakage-aware research MVP.
 - Added deterministic synthetic validation, CSV ingestion, strategies, labels,
   Boolean encoding, walk-forward selection, costs, reports, visuals, and tests.
-- Added an optional TMU adapter and a verified dependency-light baseline.
-
+- Added an optional Tsetlin Machine Unified (TMU) adapter and a verified
+  dependency-light baseline.

@@ -49,7 +49,8 @@ drawdown, turnover, and total return. Classification accuracy is diagnostic only
 ## Interpretability
 
 The baseline exports per-class log-likelihood contributions for each Boolean
-literal. TMU exposes clause-level logic, but clause comparisons require
+literal. Tsetlin Machine Unified (TMU) exposes clause-level logic, but clause
+comparisons require
 canonicalization: redundant nested thresholds should be simplified before exact
 or Jaccard comparison. Stability and profitability are separate hypotheses.
 
@@ -59,5 +60,5 @@ or Jaccard comparison. Stability and profitability are separate hypotheses.
 - Adjusted-close CSVs do not model intraday execution, taxes, borrow, or capacity.
 - The volatility/drawdown utility embeds researcher preferences.
 - Multiple comparisons can create false discoveries.
-- TM vote margins are scores, not calibrated probabilities.
+- Tsetlin Machine vote margins are scores, not calibrated probabilities.
 

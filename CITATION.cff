@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this research software, please cite it using this metadata."
+title: "LogicAlpha: An Interpretable Tsetlin Machine Framework for Market Strategy Selection"
+type: software
+authors:
+  - family-names: "Tekle"
+    given-names: "Naib Mehari"
+repository-code: "https://github.com/naibwedi/logic-alpha-tm"
+license: MIT
+version: 0.1.0
+date-released: 2026-08-28
+

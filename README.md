@@ -1,4 +1,4 @@
-# LogicAlpha-TM
+# LogicAlpha — Tsetlin Machine Research Platform
 
 An interpretable, leakage-aware research platform for selecting among market
 strategies with Boolean features and an optional Tsetlin Machine.
@@ -47,9 +47,11 @@ python -m logic_alpha_tm.cli run --csv data/raw/prices.csv --output results
 ```
 
 The default interpretable model is Bernoulli Naive Bayes, which provides a
-dependency-light verified baseline. Select `--model tmu` after installing TMU.
+dependency-light verified baseline. Select `--model tmu` after installing
+Tsetlin Machine Unified (TMU).
 The adapter follows the official import path
-`tmu.models.classification.vanilla_classifier.TMClassifier`. TMU vote margins
+`tmu.models.classification.vanilla_classifier.TMClassifier`. Tsetlin Machine
+vote margins
 remain unavailable through the version-stable adapter and are never presented as
 probabilities.
 
@@ -73,3 +75,13 @@ This repository proves the full research plumbing with synthetic data. A real
 market conclusion requires licensed, point-in-time data; repeated walk-forward
 runs; parameter sensitivity tests; and a locked final holdout. Synthetic demo
 performance is a software check, not evidence of tradable alpha.
+
+## Research and financial disclaimer
+
+This project is open-source research software. It does not provide investment
+advice, recommendations, brokerage services, or assurances of future returns.
+Models can fail, backtests can be biased, and users are responsible for validating
+data, assumptions, execution constraints, and applicable regulations.
+
+Contributions are welcome—see [CONTRIBUTING.md](CONTRIBUTING.md). For academic
+reuse, cite the repository using [CITATION.cff](CITATION.cff).
