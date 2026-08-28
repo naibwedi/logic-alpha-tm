@@ -50,10 +50,9 @@ The default interpretable model is Bernoulli Naive Bayes, which provides a
 dependency-light verified baseline. Select `--model tmu` after installing
 Tsetlin Machine Unified (TMU).
 The adapter follows the official import path
-`tmu.models.classification.vanilla_classifier.TMClassifier`. Tsetlin Machine
-vote margins
-remain unavailable through the version-stable adapter and are never presented as
-probabilities.
+`tmu.models.classification.vanilla_classifier.TMClassifier`. Tsetlin Machine vote
+margins remain unavailable through the version-stable adapter and are never
+presented as probabilities.
 
 ## Outputs
 
