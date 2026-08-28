@@ -9,3 +9,4 @@ data/processed/*
 results/*
 !results/.gitkeep
 outputs/
+work/

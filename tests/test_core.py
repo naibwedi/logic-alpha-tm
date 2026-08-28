@@ -10,6 +10,7 @@ from logic_alpha_tm.config import ResearchConfig
 from logic_alpha_tm.data import synthetic_prices, validate_prices
 from logic_alpha_tm.features import QuantileBooleanEncoder, build_features
 from logic_alpha_tm.pipeline import run_research
+from logic_alpha_tm.providers import parse_massive_daily_bars
 from logic_alpha_tm.strategies import forward_utilities, strategy_labels, strategy_returns
 
 
@@ -53,7 +54,19 @@ class LogicAlphaTests(unittest.TestCase):
             for name in ("summary.json", "predictions.csv", "rules.csv", "report.svg", "REPORT.md"):
                 self.assertTrue((Path(directory) / name).exists())
 
+    def test_massive_parser_uses_unadjusted_close_field(self):
+        payload = {
+            "status": "OK",
+            "results": [
+                {"t": 1704153600000, "c": 472.65, "o": 470.0},
+                {"t": 1704240000000, "c": 475.10, "o": 473.0},
+            ],
+        }
+        bars = parse_massive_daily_bars(payload, "SPY")
+        self.assertEqual(bars.name, "SPY")
+        self.assertEqual(bars.index[0], pd.Timestamp("2024-01-02"))
+        self.assertAlmostEqual(bars.iloc[1], 475.10)
+
 
 if __name__ == "__main__":
     unittest.main()
-

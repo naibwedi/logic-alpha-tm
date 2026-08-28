@@ -1,0 +1,37 @@
+# Licensed data protocol
+
+The real-data path uses [Massive U.S. Stocks daily aggregate bars](https://massive.com/docs/rest/stocks/aggregates/custom-bars).
+Access requires
+a Massive account, an API key, and a plan whose license covers the intended use.
+The downloader sends the key in an `Authorization: Bearer` header and never writes
+it to disk.
+
+## Point-in-time policy
+
+- Download `adjusted=false` bars so later corporate-action adjustments are not
+  silently applied to earlier observations.
+- Keep downloaded files under `data/raw/`; Git ignores this vendor-controlled data.
+- Record `observation_at`, `available_at`, source, and revision metadata alongside
+  prices. The adapter records 16:15 America/New_York on the observation date as a
+  conservative post-close assumption; verify it against the latency of your plan.
+- Make decisions only when `available_at <= decision_at`.
+- Record the download date, vendor plan, API response status, and experiment commit.
+
+Price-only unadjusted bars omit dividends and therefore are not a total-return
+series. Before making financial claims, add point-in-time corporate actions or a
+licensed total-return source and test survivorship, delisting, and revision bias.
+
+## Reproduction
+
+```powershell
+pip install -e ".[tm]"
+$env:MASSIVE_API_KEY = "your-local-key"
+python -m logic_alpha_tm.cli download-massive --start 2005-01-01 --end 2025-12-31
+python -m logic_alpha_tm.cli run --csv data/raw/massive-prices.csv --model bernoulli --output results/real-bernoulli
+python -m logic_alpha_tm.cli run --csv data/raw/massive-prices.csv --model tmu --output results/real-tmu
+```
+
+See Massive's [authentication guidance](https://massive.com/docs/rest/quickstart)
+and [stocks documentation](https://massive.com/docs/rest/stocks) for current API
+and entitlement details. Do not paste credentials into issues, logs, reports, or chat. The repository's
+synthetic demo stays in CI because licensed vendor data cannot be redistributed.

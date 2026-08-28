@@ -39,16 +39,26 @@ python -m logic_alpha_tm.cli demo --output results
 python -m unittest discover -s tests -v
 ```
 
-For real data, supply a wide CSV with `date` and adjusted close columns named
+For real data, supply a wide CSV with `date` and close columns named
 `SPY`, `QQQ`, `IWM`, and `TLT`:
 
 ```powershell
 python -m logic_alpha_tm.cli run --csv data/raw/prices.csv --output results
 ```
 
+The repository also includes a [licensed Massive data adapter](https://massive.com/docs/rest/stocks/aggregates/custom-bars). Set the API key
+locally, download unadjusted daily bars with point-in-time availability metadata,
+then run the experiment. Never commit the key or downloaded vendor data.
+
+```powershell
+$env:MASSIVE_API_KEY = "your-local-key"
+python -m logic_alpha_tm.cli download-massive --start 2005-01-01 --end 2025-12-31
+python -m logic_alpha_tm.cli run --csv data/raw/massive-prices.csv --output results/real-bernoulli
+```
+
 The default interpretable model is Bernoulli Naive Bayes, which provides a
 dependency-light verified baseline. Select `--model tmu` after installing
-Tsetlin Machine Unified (TMU).
+Tsetlin Machine Unified (TMU) with `pip install -e ".[tm]"`.
 The adapter follows the official import path
 `tmu.models.classification.vanilla_classifier.TMClassifier`. Tsetlin Machine vote
 margins remain unavailable through the version-stable adapter and are never
@@ -66,7 +76,9 @@ presented as probabilities.
 - `REPORT.md`: concise generated research report
 
 Read [docs/METHODOLOGY.md](docs/METHODOLOGY.md) before interpreting results and
-[docs/ROADMAP.md](docs/ROADMAP.md) before expanding the system.
+[docs/ROADMAP.md](docs/ROADMAP.md) before expanding the system. The first
+[model comparison](docs/EXPERIMENTS.md) and [data-source protocol](docs/DATA_SOURCES.md)
+record what is validated and what still requires licensed credentials.
 
 ## Current scope
 
