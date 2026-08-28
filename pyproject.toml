@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "logic-alpha-tm"
+version = "0.1.0"
+description = "Interpretable, leakage-aware market strategy selection research"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = ["numpy>=1.26", "pandas>=2.1"]
+
+[project.optional-dependencies]
+tm = ["tmu"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+logic-alpha = "logic_alpha_tm.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
