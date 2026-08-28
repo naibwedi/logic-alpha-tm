@@ -58,8 +58,10 @@ validation result, not investment evidence.
 |---|---:|---:|---:|
 {metric_rows}
 
-Observations: {summary['observations']}  
-Walk-forward folds: {summary['folds']}  
+Observations: {summary['observations']}
+
+Walk-forward folds: {summary['folds']}
+
 Decision accuracy (diagnostic): {summary['accuracy']:.2%}
 
 ## Interpretation
@@ -72,4 +74,3 @@ See `rules.csv` for fold-specific influential literals and `report.svg` for the 
 """
     (output / "REPORT.md").write_text(report, encoding="utf-8")
     (output / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
-
