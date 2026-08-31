@@ -17,11 +17,12 @@
 
 ## Next evidence milestones
 
-1. Add licensed point-in-time ETF, VIX, yields, and breadth data with `available_at`.
-2. Freeze a final holdout before tuning.
-3. Run nested walk-forward model and utility-parameter selection.
-4. Compare the Tsetlin Machine against logistic regression, boosted trees, and
-   strategy blending.
+1. Execute the licensed point-in-time ETF benchmark; the adapter, availability
+   checks, dataset fingerprints, and frozen experiment specification are ready.
+2. Complete development-period comparisons without opening the locked holdout.
+3. Review the pre-registered sensitivity grid and commit any methodology changes.
+4. Run the Tsetlin Machine, Bernoulli, logistic-regression, and boosted-tree
+   comparison once on the locked final holdout.
 5. Repeat seeds; canonicalize clauses and measure activation-set similarity.
 6. Test whether clause stability predicts future utility after correction for
    multiple testing.

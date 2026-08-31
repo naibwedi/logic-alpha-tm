@@ -26,10 +26,14 @@ licensed total-return source and test survivorship, delisting, and revision bias
 ```powershell
 pip install -e ".[tm]"
 $env:MASSIVE_API_KEY = "your-local-key"
-python -m logic_alpha_tm.cli download-massive --start 2005-01-01 --end 2025-12-31
+python -m logic_alpha_tm.cli download-massive --start 2005-01-01 --end 2025-12-31 --vendor-plan "your-plan-label"
 python -m logic_alpha_tm.cli run --csv data/raw/massive-prices.csv --model bernoulli --output results/real-bernoulli
 python -m logic_alpha_tm.cli run --csv data/raw/massive-prices.csv --model tmu --output results/real-tmu
 ```
+
+The download also creates `massive-prices.available-at.csv` and
+`massive-prices.manifest.json`. The frozen benchmark refuses to run without the
+availability file and fingerprints both files in its output manifest.
 
 See Massive's [authentication guidance](https://massive.com/docs/rest/quickstart)
 and [stocks documentation](https://massive.com/docs/rest/stocks) for current API

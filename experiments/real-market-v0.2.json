@@ -1,0 +1,27 @@
+{
+  "name": "real-market-v0.2-frozen",
+  "universe": ["SPY", "QQQ", "IWM", "TLT"],
+  "models": ["bernoulli", "logistic", "boosted_tree", "tmu"],
+  "development": {
+    "start": "2008-01-01",
+    "end": "2020-12-31"
+  },
+  "holdout": {
+    "start": "2021-01-01",
+    "end": "2025-12-31"
+  },
+  "robustness": [
+    {},
+    {"strategy_cost_bps": 5.0, "selector_switch_cost_bps": 5.0},
+    {"strategy_cost_bps": 10.0, "selector_switch_cost_bps": 10.0},
+    {"rebalance_every": 21},
+    {"min_train": 756, "test_size": 126},
+    {"horizon": 10, "label_dead_zone": 0.002},
+    {"horizon": 40, "label_dead_zone": 0.005}
+  ],
+  "decision_gates": {
+    "primary": "selector Sharpe exceeds equal-weight Sharpe after costs",
+    "robustness": "conclusion is not dependent on one crisis period or one cost setting",
+    "holdout_policy": "run only after development choices are frozen"
+  }
+}

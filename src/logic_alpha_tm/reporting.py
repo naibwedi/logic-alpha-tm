@@ -17,7 +17,7 @@ def _points(values: pd.Series, x: float, y: float, width: float, height: float) 
     return " ".join(f"{a:.1f},{b:.1f}" for a, b in zip(xs, ys))
 
 
-def write_svg(equity: pd.DataFrame, predictions: pd.DataFrame, path: Path) -> None:
+def write_svg(equity: pd.DataFrame, predictions: pd.DataFrame, path: Path, data_kind: str = "research data") -> None:
     colors = {"selector": "#ff5a36", "equal_weight": "#17b890", "SPY": "#5b7cfa"}
     lines = []
     for name in equity.columns:
@@ -35,7 +35,7 @@ def write_svg(equity: pd.DataFrame, predictions: pd.DataFrame, path: Path) -> No
     svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="700" viewBox="0 0 1120 700">
 <rect width="1120" height="700" fill="#0f172a"/><style>text{{fill:#e5e7eb;font-family:Arial,sans-serif}} .grid{{stroke:#334155;stroke-width:1}}</style>
 <text x="70" y="42" font-size="26" font-weight="bold">LogicAlpha-TM walk-forward report</text>
-<text x="70" y="68" font-size="14">Synthetic validation — not evidence of tradable alpha</text>
+<text x="70" y="68" font-size="14">{html.escape(data_kind)} — research software, not investment advice</text>
 <line class="grid" x1="70" y1="385" x2="1040" y2="385"/><text x="70" y="105" font-size="15">Growth of $1</text>{''.join(lines)}
 <text x="70" y="430" font-size="15">Selector drawdown</text><polyline fill="none" stroke="#fbbf24" stroke-width="2" points="{_points(dd, 70, 450, 970, 115)}"/>
 <text x="70" y="595" font-size="15">Out-of-sample strategy selections</text>{''.join(bars)}
@@ -51,8 +51,8 @@ def write_report(output: Path, summary: dict, predictions: pd.DataFrame, rules: 
     report = f"""# LogicAlpha-TM generated report
 
 This run used **{summary['data_kind']}** data and **{summary['model']}** as the selector.
-Results are out-of-sample across expanding walk-forward folds. They are a software
-validation result, not investment evidence.
+Results are out-of-sample across expanding walk-forward folds. A single run is not
+investment evidence; conclusions require robustness checks and the locked holdout.
 
 | Portfolio | CAGR | Sharpe | Max drawdown |
 |---|---:|---:|---:|
@@ -63,6 +63,8 @@ Observations: {summary['observations']}
 Walk-forward folds: {summary['folds']}
 
 Decision accuracy (diagnostic): {summary['accuracy']:.2%}
+
+Annualized selector switches: {summary['annualized_selector_switches']:.1f}
 
 ## Interpretation
 

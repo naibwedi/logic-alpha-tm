@@ -52,7 +52,7 @@ then run the experiment. Never commit the key or downloaded vendor data.
 
 ```powershell
 $env:MASSIVE_API_KEY = "your-local-key"
-python -m logic_alpha_tm.cli download-massive --start 2005-01-01 --end 2025-12-31
+python -m logic_alpha_tm.cli download-massive --start 2005-01-01 --end 2025-12-31 --vendor-plan "your-plan-label"
 python -m logic_alpha_tm.cli run --csv data/raw/massive-prices.csv --output results/real-bernoulli
 ```
 
@@ -63,6 +63,30 @@ The adapter follows the official import path
 `tmu.models.classification.vanilla_classifier.TMClassifier`. Tsetlin Machine vote
 margins remain unavailable through the version-stable adapter and are never
 presented as probabilities.
+
+## Frozen real-market benchmark
+
+The pre-registered experiment specification is
+[`experiments/real-market-v0.2.json`](experiments/real-market-v0.2.json). It fixes
+the development and final-holdout dates, comparison models, sensitivity runs,
+and decision gates before the licensed benchmark is executed. The benchmark
+requires the matching `*.available-at.csv` file and records SHA-256 fingerprints
+for the prices, availability metadata, and experiment specification. It writes
+`comparison.csv`, `decision-gates.csv`, `BENCHMARK.md`, and complete per-run
+artifacts for independent review.
+
+```powershell
+pip install -e ".[tm]"
+logic-alpha benchmark --csv data/raw/massive-prices.csv --phase development --output results/development-v0.2
+```
+
+After reviewing development results and committing any final methodology choices,
+run the holdout exactly once. The explicit flag makes accidental holdout access
+harder and records a separate result folder.
+
+```powershell
+logic-alpha benchmark --csv data/raw/massive-prices.csv --phase holdout --unlock-holdout --output results/holdout-v0.2
+```
 
 ## Outputs
 

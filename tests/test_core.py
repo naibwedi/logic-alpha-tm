@@ -8,7 +8,9 @@ import pandas as pd
 from logic_alpha_tm.backtest import expanding_folds
 from logic_alpha_tm.config import ResearchConfig
 from logic_alpha_tm.data import synthetic_prices, validate_prices
+from logic_alpha_tm.experiments import load_spec, validate_availability
 from logic_alpha_tm.features import QuantileBooleanEncoder, build_features
+from logic_alpha_tm.models import BoostedTreeSelector, LogisticSelector
 from logic_alpha_tm.pipeline import run_research
 from logic_alpha_tm.providers import parse_massive_daily_bars
 from logic_alpha_tm.strategies import forward_utilities, strategy_labels, strategy_returns
@@ -66,6 +68,36 @@ class LogicAlphaTests(unittest.TestCase):
         self.assertEqual(bars.name, "SPY")
         self.assertEqual(bars.index[0], pd.Timestamp("2024-01-02"))
         self.assertAlmostEqual(bars.iloc[1], 475.10)
+
+    def test_frozen_experiment_spec_has_disjoint_periods(self):
+        spec = load_spec("experiments/real-market-v0.2.json")
+        self.assertLess(pd.Timestamp(spec["development"]["end"]), pd.Timestamp(spec["holdout"]["start"]))
+        self.assertIn("tmu", spec["models"])
+
+    def test_availability_must_precede_next_session(self):
+        prices = synthetic_prices(5)
+        availability = pd.DataFrame({
+            "observation_at": prices.index,
+            "available_at": prices.index.tz_localize("America/New_York") + pd.Timedelta(hours=16, minutes=15),
+            "source": "test",
+            "revision": "test",
+        })
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "prices.available-at.csv"
+            availability.to_csv(path, index=False)
+            validated = validate_availability(prices, path)
+            self.assertEqual(len(validated), len(prices))
+
+    def test_comparison_models_return_predictions_and_margins(self):
+        x = pd.DataFrame({
+            "a": [0, 0, 1, 1, 0, 1, 0, 1, 0] * 4,
+            "b": [0, 1, 0, 1, 1, 0, 0, 1, 1] * 4,
+        })
+        y = pd.Series(["cash", "trend", "momentum"] * 12)
+        for selector in (LogisticSelector(), BoostedTreeSelector()):
+            prediction, margin = selector.fit(x, y).predict_with_margin(x.iloc[:4])
+            self.assertEqual(len(prediction), 4)
+            self.assertTrue(np.isfinite(margin).all())
 
 
 if __name__ == "__main__":

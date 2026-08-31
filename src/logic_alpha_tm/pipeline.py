@@ -11,14 +11,24 @@ from .reporting import write_report, write_svg
 from .strategies import forward_utilities, strategy_labels, strategy_returns
 
 
-def run_research(prices: pd.DataFrame, output: str | Path, config: ResearchConfig, model: str = "bernoulli", data_kind: str = "user CSV"):
+def run_research(
+    prices: pd.DataFrame,
+    output: str | Path,
+    config: ResearchConfig,
+    model: str = "bernoulli",
+    data_kind: str = "user CSV",
+    evaluation_start: str | None = None,
+    evaluation_end: str | None = None,
+):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     features = build_features(prices)
     streams = strategy_returns(prices, config.strategy_cost_bps)
     utilities = forward_utilities(streams, config.horizon, config.lambda_vol, config.lambda_drawdown)
     labels = strategy_labels(utilities, config.label_dead_zone)
-    predictions, rules = run_walk_forward(features, labels, config, model)
+    predictions, rules = run_walk_forward(
+        features, labels, config, model, evaluation_start, evaluation_end
+    )
     selected, held = selector_returns(predictions, streams, config)
     predictions["held_strategy"] = held
     predictions["actual_label"] = labels.reindex(predictions.index)
@@ -55,15 +65,21 @@ def run_research(prices: pd.DataFrame, output: str | Path, config: ResearchConfi
         "always_defensive": aligned.defensive,
     })
     equity = (1 + returns).cumprod()
+    years = max(len(predictions) / 252, 1 / 252)
+    selector_switches = max(int(held.ne(held.shift()).sum() - 1), 0)
     summary = {
         "data_kind": data_kind,
         "model": model,
+        "evaluation_start": evaluation_start,
+        "evaluation_end": evaluation_end,
         "observations": len(predictions),
         "folds": int(predictions.fold.nunique()),
         "accuracy": float((predictions.prediction == predictions.actual_label).mean()),
+        "selector_switches": selector_switches,
+        "annualized_selector_switches": selector_switches / years,
         "metrics": {column: metrics(returns[column]) for column in returns},
         "config": config.__dict__,
-        "warning": "Research software; synthetic results are not evidence of tradable alpha.",
+        "warning": "Research software; backtest results are not evidence of tradable alpha or investment advice.",
     }
     equity.to_csv(output / "equity.csv", index_label="date")
     returns.to_csv(output / "returns.csv", index_label="date")
@@ -71,6 +87,6 @@ def run_research(prices: pd.DataFrame, output: str | Path, config: ResearchConfi
     rules.to_csv(output / "rules.csv", index=False)
     calibration.to_csv(output / "margin_calibration.csv", index=False)
     stability.to_csv(output / "rule_stability.csv", index=False)
-    write_svg(equity, predictions, output / "report.svg")
+    write_svg(equity, predictions, output / "report.svg", data_kind)
     write_report(output, summary, predictions, rules)
     return summary

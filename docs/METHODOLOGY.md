@@ -43,6 +43,15 @@ The runner uses expanding walk-forward folds. Each fold trains only on labels
 fully resolved before its test block. Model selection must happen within the
 historical portion; the generated test stream must not be repeatedly optimized.
 
+The frozen `real-market-v0.2` experiment uses data through 2020 for development
+and reserves 2021–2025 as a final holdout. Holdout execution requires an explicit
+unlock flag. Every benchmark run fingerprints the price file, availability file,
+and copied experiment specification.
+
+The comparison set contains Bernoulli Naive Bayes, dependency-light multinomial
+logistic regression, boosted Boolean decision stumps, and the optional Tsetlin
+Machine. Every model receives identical fold-specific Boolean features and labels.
+
 Primary metrics are CAGR, annualized volatility, Sharpe, Sortino, Calmar, maximum
 drawdown, turnover, and total return. Classification accuracy is diagnostic only.
 
@@ -61,4 +70,6 @@ or Jaccard comparison. Stability and profitability are separate hypotheses.
 - The volatility/drawdown utility embeds researcher preferences.
 - Multiple comparisons can create false discoveries.
 - Tsetlin Machine vote margins are scores, not calibrated probabilities.
+- ETF-only unadjusted closes omit dividends and cannot by themselves support a
+  total-return claim.
 

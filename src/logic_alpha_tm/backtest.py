@@ -5,11 +5,11 @@ import pandas as pd
 
 from .config import ResearchConfig
 from .features import QuantileBooleanEncoder
-from .models import BernoulliSelector, TMUSelector
+from .models import BernoulliSelector, BoostedTreeSelector, LogisticSelector, TMUSelector
 
 
-def expanding_folds(n: int, min_train: int, test_size: int, embargo: int):
-    start = min_train
+def expanding_folds(n: int, min_train: int, test_size: int, embargo: int, first_test: int | None = None):
+    start = max(min_train, first_test or min_train)
     while start < n:
         stop = min(start + test_size, n)
         train_stop = start - embargo
@@ -18,19 +18,44 @@ def expanding_folds(n: int, min_train: int, test_size: int, embargo: int):
         start = stop
 
 
-def run_walk_forward(features: pd.DataFrame, labels: pd.Series, config: ResearchConfig, model_name: str = "bernoulli"):
+def _selector(model_name: str, config: ResearchConfig):
+    if model_name == "tmu":
+        return TMUSelector()
+    if model_name == "logistic":
+        return LogisticSelector(config.seed)
+    if model_name == "boosted_tree":
+        return BoostedTreeSelector(config.seed)
+    if model_name == "bernoulli":
+        return BernoulliSelector(config.smoothing)
+    raise ValueError(f"Unknown model: {model_name}")
+
+
+def run_walk_forward(
+    features: pd.DataFrame,
+    labels: pd.Series,
+    config: ResearchConfig,
+    model_name: str = "bernoulli",
+    evaluation_start: str | None = None,
+    evaluation_end: str | None = None,
+):
     usable = features.drop(columns=["regime"]).dropna()
     common = usable.index.intersection(labels.dropna().index)
     x = usable.loc[common]
     y = labels.loc[common]
+    if evaluation_end:
+        keep = x.index <= pd.Timestamp(evaluation_end)
+        x, y = x.loc[keep], y.loc[keep]
+    first_test = int(x.index.searchsorted(pd.Timestamp(evaluation_start))) if evaluation_start else None
     predictions = []
     rules = []
-    for fold, (train_i, test_i) in enumerate(expanding_folds(len(x), config.min_train, config.test_size, config.horizon)):
+    for fold, (train_i, test_i) in enumerate(
+        expanding_folds(len(x), config.min_train, config.test_size, config.horizon, first_test)
+    ):
         train_x, test_x = x.iloc[train_i], x.iloc[test_i]
         train_y = y.iloc[train_i]
         encoder = QuantileBooleanEncoder(config.quantiles).fit(train_x)
         bx_train, bx_test = encoder.transform(train_x), encoder.transform(test_x)
-        model = (TMUSelector() if model_name == "tmu" else BernoulliSelector(config.smoothing)).fit(bx_train, train_y)
+        model = _selector(model_name, config).fit(bx_train, train_y)
         predicted, margin = model.predict_with_margin(bx_test)
         block = pd.DataFrame({"prediction": predicted, "margin": margin, "fold": fold}, index=test_x.index)
         predictions.append(block)
@@ -76,4 +101,3 @@ def metrics(returns: pd.Series) -> dict[str, float]:
         "max_drawdown": mdd,
         "calmar": cagr / abs(mdd) if mdd else 0.0,
     }
-
