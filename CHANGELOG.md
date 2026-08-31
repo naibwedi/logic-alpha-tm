@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added a free Tiingo EOD adapter with raw/adjusted audit files, corporate
+  actions, availability metadata, coverage checks, and internal-use warnings.
+- Added a separate preliminary Tiingo experiment specification so current-vintage
+  evidence is not confused with strict revision-point-in-time validation.
 - Added a frozen real-market development and holdout experiment specification.
 - Added point-in-time availability validation and SHA-256 dataset manifests.
 - Added dependency-light logistic-regression and boosted-stump benchmarks.

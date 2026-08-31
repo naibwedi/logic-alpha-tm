@@ -52,6 +52,12 @@ The comparison set contains Bernoulli Naive Bayes, dependency-light multinomial
 logistic regression, boosted Boolean decision stumps, and the optional Tsetlin
 Machine. Every model receives identical fold-specific Boolean features and labels.
 
+The `tiingo-v0.2` experiment uses the same split but is explicitly classified as
+preliminary current-vintage evidence. Tiingo adjusted closes incorporate splits
+and dividends and may reflect corrections made after the original observation.
+This is suitable for a low-cost first falsification test, but any promising result
+must be replicated with stricter revision-point-in-time data.
+
 Primary metrics are CAGR, annualized volatility, Sharpe, Sortino, Calmar, maximum
 drawdown, turnover, and total return. Classification accuracy is diagnostic only.
 

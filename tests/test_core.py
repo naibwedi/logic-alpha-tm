@@ -1,3 +1,5 @@
+import io
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,7 +14,11 @@ from logic_alpha_tm.experiments import load_spec, validate_availability
 from logic_alpha_tm.features import QuantileBooleanEncoder, build_features
 from logic_alpha_tm.models import BoostedTreeSelector, LogisticSelector
 from logic_alpha_tm.pipeline import run_research
-from logic_alpha_tm.providers import parse_massive_daily_bars
+from logic_alpha_tm.providers import (
+    download_tiingo_prices,
+    parse_massive_daily_bars,
+    parse_tiingo_daily_prices,
+)
 from logic_alpha_tm.strategies import forward_utilities, strategy_labels, strategy_returns
 
 
@@ -69,10 +75,64 @@ class LogicAlphaTests(unittest.TestCase):
         self.assertEqual(bars.index[0], pd.Timestamp("2024-01-02"))
         self.assertAlmostEqual(bars.iloc[1], 475.10)
 
+    def test_tiingo_parser_preserves_raw_adjusted_and_actions(self):
+        payload = [
+            {
+                "date": "2024-01-02T00:00:00.000Z",
+                "close": 100.0,
+                "adjClose": 98.0,
+                "divCash": 0.5,
+                "splitFactor": 1.0,
+            },
+            {
+                "date": "2024-01-03T00:00:00.000Z",
+                "close": 51.0,
+                "adjClose": 100.0,
+                "divCash": 0.0,
+                "splitFactor": 2.0,
+            },
+        ]
+        parsed = parse_tiingo_daily_prices(payload, "SPY")
+        self.assertEqual(parsed.index[0], pd.Timestamp("2024-01-02"))
+        self.assertEqual(parsed.loc["2024-01-03", "split_factor"], 2.0)
+        self.assertEqual(parsed.loc["2024-01-02", "dividend_cash"], 0.5)
+        self.assertEqual(parsed.loc["2024-01-02", "adjusted_close"], 98.0)
+
+    def test_tiingo_download_uses_token_and_conservative_availability(self):
+        payload = [
+            {
+                "date": f"2024-01-0{day}T00:00:00.000Z",
+                "close": 100.0 + day,
+                "adjClose": 99.0 + day,
+                "divCash": 0.0,
+                "splitFactor": 1.0,
+            }
+            for day in (2, 3, 4)
+        ]
+
+        def opener(request, timeout):
+            self.assertEqual(request.get_header("Authorization"), "Token secret-test-token")
+            self.assertEqual(timeout, 30)
+            return io.BytesIO(json.dumps(payload).encode("utf-8"))
+
+        adjusted, raw, actions, availability = download_tiingo_prices(
+            "2024-01-02", "2024-01-04", "secret-test-token", opener
+        )
+        self.assertEqual(adjusted.shape, (3, 4))
+        self.assertEqual(raw.shape, (3, 4))
+        self.assertTrue(actions.empty)
+        first_available = pd.Timestamp(availability.iloc[0].available_at)
+        self.assertEqual(first_available.hour, 20)
+
     def test_frozen_experiment_spec_has_disjoint_periods(self):
-        spec = load_spec("experiments/real-market-v0.2.json")
-        self.assertLess(pd.Timestamp(spec["development"]["end"]), pd.Timestamp(spec["holdout"]["start"]))
-        self.assertIn("tmu", spec["models"])
+        for path in ("experiments/real-market-v0.2.json", "experiments/tiingo-v0.2.json"):
+            with self.subTest(path=path):
+                spec = load_spec(path)
+                self.assertLess(
+                    pd.Timestamp(spec["development"]["end"]),
+                    pd.Timestamp(spec["holdout"]["start"]),
+                )
+                self.assertIn("tmu", spec["models"])
 
     def test_availability_must_precede_next_session(self):
         prices = synthetic_prices(5)

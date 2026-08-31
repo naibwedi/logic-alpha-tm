@@ -83,6 +83,7 @@ def run_benchmark(
     spec_copy.write_text(json.dumps(spec, indent=2) + "\n", encoding="utf-8")
     manifest = {
         "experiment": spec["name"],
+        "evidence_tier": spec.get("evidence_tier", "not-specified"),
         "experiment_commit": git_commit(),
         "phase": phase,
         "prices_file": Path(csv_path).name,
@@ -108,7 +109,9 @@ def run_benchmark(
                 run_output,
                 config,
                 model=model,
-                data_kind=f"licensed point-in-time market data ({phase})",
+                data_kind=spec.get(
+                    "data_kind", f"licensed point-in-time market data ({phase})"
+                ),
                 evaluation_start=period["start"],
                 evaluation_end=period["end"],
             )

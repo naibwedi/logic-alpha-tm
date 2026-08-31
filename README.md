@@ -46,6 +46,23 @@ For real data, supply a wide CSV with `date` and close columns named
 python -m logic_alpha_tm.cli run --csv data/raw/prices.csv --output results
 ```
 
+### Free long-history path: Tiingo Starter
+
+Tiingo Starter is sufficient for the four-symbol preliminary benchmark. Each
+user supplies their own token; downloaded data remain local and must not be
+redistributed. The downloader saves adjusted closes for research, raw closes and
+corporate actions for audit, conservative availability metadata, and checksums.
+
+```powershell
+$env:TIINGO_API_TOKEN = "your-local-token"
+python -m logic_alpha_tm.cli download-tiingo --start 2005-01-01 --end 2025-12-31
+python -m logic_alpha_tm.cli benchmark --csv data/raw/tiingo-prices.csv --spec experiments/tiingo-v0.2.json --phase development --output results/tiingo-development-v0.2
+```
+
+Tiingo history is current-vintage corrected data, not a historical revision
+archive. Results therefore form a low-cost preliminary benchmark rather than the
+strictest possible point-in-time evidence. The final holdout remains locked.
+
 The repository also includes a [licensed Massive data adapter](https://massive.com/docs/rest/stocks/aggregates/custom-bars). Set the API key
 locally, download unadjusted daily bars with point-in-time availability metadata,
 then run the experiment. Never commit the key or downloaded vendor data.

@@ -1,5 +1,26 @@
 # Licensed data protocol
 
+## Tiingo Starter: preliminary long-history benchmark
+
+The free Tiingo Starter path provides sufficient request and symbol limits for
+SPY, QQQ, IWM, and TLT. Tiingo data are licensed for internal use; never commit,
+redistribute, or embed downloaded rows in public artifacts.
+
+The downloader records adjusted and raw closes, dividend/split fields, a download
+timestamp, checksums, and a conservative 20:00 America/New_York availability
+assumption. Tiingo may correct historical records, so this is current-vintage
+history rather than a historical revision archive.
+
+```powershell
+$env:TIINGO_API_TOKEN = "your-local-token"
+python -m logic_alpha_tm.cli download-tiingo --start 2005-01-01 --end 2025-12-31
+python -m logic_alpha_tm.cli benchmark --csv data/raw/tiingo-prices.csv --spec experiments/tiingo-v0.2.json --phase development --output results/tiingo-development-v0.2
+```
+
+Do not open the locked holdout until development choices are frozen.
+
+## Massive: stricter licensed-data path
+
 The real-data path uses [Massive U.S. Stocks daily aggregate bars](https://massive.com/docs/rest/stocks/aggregates/custom-bars).
 Access requires
 a Massive account, an API key, and a plan whose license covers the intended use.

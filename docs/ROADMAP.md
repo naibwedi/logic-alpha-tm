@@ -17,8 +17,8 @@
 
 ## Next evidence milestones
 
-1. Execute the licensed point-in-time ETF benchmark; the adapter, availability
-   checks, dataset fingerprints, and frozen experiment specification are ready.
+1. Execute the free Tiingo current-vintage development benchmark as preliminary
+   evidence; keep all downloaded rows private.
 2. Complete development-period comparisons without opening the locked holdout.
 3. Review the pre-registered sensitivity grid and commit any methodology changes.
 4. Run the Tsetlin Machine, Bernoulli, logistic-regression, and boosted-tree
@@ -27,6 +27,8 @@
 6. Test whether clause stability predicts future utility after correction for
    multiple testing.
 7. Paper trade with recorded decisions before considering broker integration.
+8. Replicate any promising Tiingo result with stricter licensed point-in-time
+   data before making a market-research claim.
 
 ## Decision gates
 

@@ -25,3 +25,11 @@ API key**. The repository cannot redistribute vendor data or embed credentials.
 When credentials are available, run both commands in `DATA_SOURCES.md`, preserve
 the complete output folders, and add a dated table here without tuning against
 the final holdout.
+
+## Tiingo preliminary market benchmark
+
+Status: **adapter and frozen specification implemented; local token execution
+pending**. This route uses current-vintage adjusted EOD history under Tiingo's
+internal-use terms. Raw vendor rows remain local. Run the development phase from
+`DATA_SOURCES.md`, review the complete sensitivity table, and do not unlock the
+2021–2025 holdout until methodology choices are committed.

@@ -4,11 +4,13 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pandas as pd
+
 from .config import ResearchConfig
 from .data import load_prices_csv, synthetic_prices
 from .experiments import run_benchmark, sha256_file
 from .pipeline import run_research
-from .providers import download_massive_prices
+from .providers import download_massive_prices, download_tiingo_prices
 
 
 def parser() -> argparse.ArgumentParser:
@@ -32,11 +34,72 @@ def parser() -> argparse.ArgumentParser:
     download.add_argument("--end", required=True, help="inclusive date (YYYY-MM-DD)")
     download.add_argument("--output", default="data/raw/massive-prices.csv")
     download.add_argument("--vendor-plan", default="not-recorded", help="non-secret licensed plan label for the manifest")
+    tiingo = sub.add_parser("download-tiingo", help="download Tiingo EOD prices for internal research")
+    tiingo.add_argument("--start", required=True, help="inclusive date (YYYY-MM-DD)")
+    tiingo.add_argument("--end", required=True, help="inclusive date (YYYY-MM-DD)")
+    tiingo.add_argument("--output", default="data/raw/tiingo-prices.csv")
+    tiingo.add_argument("--allow-partial-history", action="store_true")
     return root
 
 
 def main() -> None:
     args = parser().parse_args()
+    if args.command == "download-tiingo":
+        api_token = os.environ.get("TIINGO_API_TOKEN")
+        if not api_token:
+            raise SystemExit(
+                "TIINGO_API_TOKEN is not set. Set it locally; never commit or paste the token into a report."
+            )
+        adjusted, raw, actions, availability = download_tiingo_prices(
+            args.start, args.end, api_token
+        )
+        requested_start = pd.Timestamp(args.start)
+        requested_end = pd.Timestamp(args.end)
+        tolerance = pd.Timedelta(days=10)
+        if not args.allow_partial_history and (
+            adjusted.index.min() > requested_start + tolerance
+            or adjusted.index.max() < requested_end - tolerance
+        ):
+            raise SystemExit(
+                "Tiingo returned partial history: "
+                f"{adjusted.index.min().date()} through {adjusted.index.max().date()}. "
+                "Check ticker entitlement or use --allow-partial-history deliberately."
+            )
+        output = Path(args.output)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        raw_path = output.with_name(f"{output.stem}.raw.csv")
+        actions_path = output.with_name(f"{output.stem}.corporate-actions.csv")
+        availability_path = output.with_name(f"{output.stem}.available-at.csv")
+        adjusted.rename_axis("date").to_csv(output)
+        raw.rename_axis("date").to_csv(raw_path)
+        actions.to_csv(actions_path, index=False)
+        availability.rename_axis("observation_at").to_csv(availability_path)
+        manifest = {
+            "prices": str(output),
+            "price_basis": "Tiingo current-vintage adjusted close",
+            "prices_sha256": sha256_file(output),
+            "raw_prices": str(raw_path),
+            "raw_prices_sha256": sha256_file(raw_path),
+            "corporate_actions": str(actions_path),
+            "corporate_actions_sha256": sha256_file(actions_path),
+            "availability": str(availability_path),
+            "availability_sha256": sha256_file(availability_path),
+            "rows": len(adjusted),
+            "actual_start": str(adjusted.index.min().date()),
+            "actual_end": str(adjusted.index.max().date()),
+            "requested_start": args.start,
+            "requested_end": args.end,
+            "tickers": list(adjusted.columns),
+            "source": "tiingo-end-of-day",
+            "downloaded_at_utc": datetime.now(timezone.utc).isoformat(),
+            "license": "Internal use only; do not redistribute downloaded Tiingo data.",
+            "availability_assumption": "20:00 America/New_York on observation date",
+            "limitation": "Current-vintage adjusted history is not a historical revision archive.",
+        }
+        manifest_path = output.with_name(f"{output.stem}.manifest.json")
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(manifest, indent=2))
+        return
     if args.command == "download-massive":
         api_key = os.environ.get("MASSIVE_API_KEY")
         if not api_key:
