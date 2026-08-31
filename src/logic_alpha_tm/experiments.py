@@ -63,6 +63,7 @@ def run_benchmark(
     output: str | Path,
     phase: str,
     unlock_holdout: bool = False,
+    tmu_platform: str = "CPU",
 ) -> pd.DataFrame:
     spec = load_spec(spec_path)
     if phase == "holdout" and not unlock_holdout:
@@ -94,11 +95,12 @@ def run_benchmark(
         "rows": len(prices),
         "first_observation": str(prices.index.min().date()),
         "last_observation": str(prices.index.max().date()),
+        "tmu_platform": tmu_platform,
     }
     (output / "run-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
     rows = []
-    base = ResearchConfig()
+    base = replace(ResearchConfig(), tmu_platform=tmu_platform)
     sensitivity = spec["robustness"] if phase == "development" else [{}]
     for model in spec["models"]:
         for run_id, overrides in enumerate(sensitivity):

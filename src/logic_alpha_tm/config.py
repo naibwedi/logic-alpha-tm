@@ -15,4 +15,4 @@ class ResearchConfig:
     selector_switch_cost_bps: float = 2.0
     smoothing: float = 1.0
     seed: int = 7
-
+    tmu_platform: str = "CPU"

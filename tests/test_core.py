@@ -12,7 +12,7 @@ from logic_alpha_tm.config import ResearchConfig
 from logic_alpha_tm.data import synthetic_prices, validate_prices
 from logic_alpha_tm.experiments import load_spec, validate_availability
 from logic_alpha_tm.features import QuantileBooleanEncoder, build_features
-from logic_alpha_tm.models import BoostedTreeSelector, LogisticSelector
+from logic_alpha_tm.models import BoostedTreeSelector, LogisticSelector, TMUSelector
 from logic_alpha_tm.pipeline import run_research
 from logic_alpha_tm.providers import (
     download_tiingo_prices,
@@ -158,6 +158,10 @@ class LogicAlphaTests(unittest.TestCase):
             prediction, margin = selector.fit(x, y).predict_with_margin(x.iloc[:4])
             self.assertEqual(len(prediction), 4)
             self.assertTrue(np.isfinite(margin).all())
+
+    def test_tmu_selector_records_requested_platform(self):
+        self.assertEqual(TMUSelector().platform, "CPU")
+        self.assertEqual(TMUSelector(platform="CUDA").platform, "CUDA")
 
 
 if __name__ == "__main__":

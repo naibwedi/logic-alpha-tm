@@ -29,6 +29,12 @@ def parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--phase", choices=("development", "holdout"), default="development")
     benchmark.add_argument("--output", default="results/real-benchmark")
     benchmark.add_argument("--unlock-holdout", action="store_true")
+    benchmark.add_argument(
+        "--tmu-platform",
+        choices=("CPU", "CUDA"),
+        default="CPU",
+        help="TMU execution backend; use CUDA only on a configured NVIDIA runtime",
+    )
     download = sub.add_parser("download-massive", help="download licensed unadjusted daily bars")
     download.add_argument("--start", required=True, help="inclusive date (YYYY-MM-DD)")
     download.add_argument("--end", required=True, help="inclusive date (YYYY-MM-DD)")
@@ -136,7 +142,12 @@ def main() -> None:
     if args.command == "benchmark":
         try:
             comparison = run_benchmark(
-                args.csv, args.spec, args.output, args.phase, args.unlock_holdout
+                args.csv,
+                args.spec,
+                args.output,
+                args.phase,
+                args.unlock_holdout,
+                args.tmu_platform,
             )
         except ValueError as exc:
             raise SystemExit(str(exc)) from exc

@@ -63,6 +63,19 @@ Tiingo history is current-vintage corrected data, not a historical revision
 archive. Results therefore form a low-cost preliminary benchmark rather than the
 strictest possible point-in-time evidence. The final holdout remains locked.
 
+### Optional private Google Colab GPU run
+
+The repository includes a
+[Colab GPU notebook](notebooks/tiingo_gpu_colab.ipynb) for the same frozen
+development benchmark. Open it in Google Colab, select a T4 GPU, and upload only
+`tiingo-prices.csv` plus `tiingo-prices.available-at.csv` when prompted. The
+notebook never asks for the Tiingo token, records `CUDA` in the run manifest, and
+downloads the results as a ZIP. Never make a copy public while licensed files
+remain attached to its runtime.
+
+Local CPU remains the default. The equivalent explicit local command adds
+`--tmu-platform CPU`; use `CUDA` only on a configured NVIDIA/PyCUDA environment.
+
 The repository also includes a [licensed Massive data adapter](https://massive.com/docs/rest/stocks/aggregates/custom-bars). Set the API key
 locally, download unadjusted daily bars with point-in-time availability metadata,
 then run the experiment. Never commit the key or downloaded vendor data.

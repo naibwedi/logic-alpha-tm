@@ -20,7 +20,7 @@ def expanding_folds(n: int, min_train: int, test_size: int, embargo: int, first_
 
 def _selector(model_name: str, config: ResearchConfig):
     if model_name == "tmu":
-        return TMUSelector()
+        return TMUSelector(platform=config.tmu_platform)
     if model_name == "logistic":
         return LogisticSelector(config.seed)
     if model_name == "boosted_tree":

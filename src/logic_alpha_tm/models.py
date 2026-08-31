@@ -47,9 +47,17 @@ class BernoulliSelector:
 
 
 class TMUSelector:
-    def __init__(self, clauses: int = 1000, threshold: int = 100, specificity: float = 5.0, epochs: int = 20):
+    def __init__(
+        self,
+        clauses: int = 1000,
+        threshold: int = 100,
+        specificity: float = 5.0,
+        epochs: int = 20,
+        platform: str = "CPU",
+    ):
         self.params = clauses, threshold, specificity
         self.epochs = epochs
+        self.platform = platform
         self.classes_: np.ndarray | None = None
         self.model = None
 
@@ -59,7 +67,7 @@ class TMUSelector:
         except ImportError as exc:
             raise RuntimeError("TMU is optional. Install the 'tm' extra before using --model tmu.") from exc
         self.classes_, encoded_y = np.unique(y, return_inverse=True)
-        self.model = TMClassifier(*self.params, platform="CPU", weighted_clauses=True)
+        self.model = TMClassifier(*self.params, platform=self.platform, weighted_clauses=True)
         for _ in range(self.epochs):
             self.model.fit(x.to_numpy(dtype=np.uint32), encoded_y.astype(np.uint32))
         return self

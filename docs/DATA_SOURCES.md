@@ -19,6 +19,14 @@ python -m logic_alpha_tm.cli benchmark --csv data/raw/tiingo-prices.csv --spec e
 
 Do not open the locked holdout until development choices are frozen.
 
+### Private Colab execution
+
+`notebooks/tiingo_gpu_colab.ipynb` runs the development benchmark on a Colab
+NVIDIA runtime without storing the Tiingo token. Upload only the adjusted price
+and availability files into the temporary private runtime. Download the result
+ZIP, then disconnect and delete the runtime. The notebook, repository, and any
+shared drive must never contain the licensed CSV files.
+
 ## Massive: stricter licensed-data path
 
 The real-data path uses [Massive U.S. Stocks daily aggregate bars](https://massive.com/docs/rest/stocks/aggregates/custom-bars).
