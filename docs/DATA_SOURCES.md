@@ -22,10 +22,12 @@ Do not open the locked holdout until development choices are frozen.
 ### Private Colab execution
 
 `notebooks/tiingo_gpu_colab.ipynb` runs the development benchmark on a Colab
-NVIDIA runtime without storing the Tiingo token. Upload only the adjusted price
-and availability files into the temporary private runtime. Download the result
-ZIP, then disconnect and delete the runtime. The notebook, repository, and any
-shared drive must never contain the licensed CSV files.
+NVIDIA runtime without storing the Tiingo token. TMU 0.8.3 requires the Colab
+`26.07` Python 3.12 runtime; the notebook checks this before installing anything.
+Upload only the adjusted price and availability files into the temporary private
+runtime. Download the result ZIP, then disconnect and delete the runtime. The
+notebook, repository, and any shared drive must never contain the licensed CSV
+files.
 
 ## Massive: stricter licensed-data path
 

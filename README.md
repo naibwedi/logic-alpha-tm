@@ -67,7 +67,8 @@ strictest possible point-in-time evidence. The final holdout remains locked.
 
 The repository includes a
 [Colab GPU notebook](notebooks/tiingo_gpu_colab.ipynb) for the same frozen
-development benchmark. Open it in Google Colab, select a T4 GPU, and upload only
+development benchmark. Open it in Google Colab, use the Command Palette to
+select runtime version `26.07` (Python 3.12), select a T4 GPU, and upload only
 `tiingo-prices.csv` plus `tiingo-prices.available-at.csv` when prompted. The
 notebook never asks for the Tiingo token, records `CUDA` in the run manifest, and
 downloads the results as a ZIP. Never make a copy public while licensed files
