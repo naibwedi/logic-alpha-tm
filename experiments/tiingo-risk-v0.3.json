@@ -1,0 +1,28 @@
+{
+  "engine": "risk-audit-v0.3",
+  "name": "Tiingo development risk-filter pilot",
+  "development": {"start": "2008-01-01", "end": "2020-12-31"},
+  "holdout": {"start": "2021-01-01", "end": "2025-12-31"},
+  "models": ["bernoulli", "logistic", "tmu"],
+  "seeds": [7, 19, 41],
+  "config": {
+    "horizon": 20,
+    "execution_lag": 2,
+    "min_train": 504,
+    "test_size": 126,
+    "rebalance_every": 5,
+    "reduction": 0.5,
+    "dead_zone": 0.003,
+    "lambda_vol": 0.15,
+    "lambda_drawdown": 0.20,
+    "cost_bps": 2.0,
+    "clauses": 200,
+    "epochs": 10,
+    "tmu_platform": "CPU"
+  },
+  "evaluation_cost_bps": [2.0, 5.0, 10.0],
+  "hypothesis": "A binary filter that defaults to the blend can improve risk-adjusted results without excessive missed exposure.",
+  "decision_gate": "Advance only if all three TMU seeds beat the blend and simple risk filter in standard zero-risk-free Sharpe at every cost, with no worse maximum drawdown than the blend.",
+  "selection_policy": "Report every seed. Do not select the best seed. These are development data already used in earlier research.",
+  "limitations": "Pilot capacity (200 clauses, 10 epochs) chosen before execution; current-vintage data; zero cash yield; daily target rebalancing; adjusted-close execution proxy. Cost scenarios replay the same predictions without retraining. No holdout access."
+}

@@ -29,6 +29,11 @@ def parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--phase", choices=("development", "holdout"), default="development")
     benchmark.add_argument("--output", default="results/real-benchmark")
     benchmark.add_argument("--unlock-holdout", action="store_true")
+    audit = sub.add_parser("risk-audit", help="run the audited development-only blend/risk-filter experiment")
+    audit.add_argument("--csv", required=True)
+    audit.add_argument("--spec", default="experiments/tiingo-risk-v0.3.json")
+    audit.add_argument("--output", default="results/tiingo-risk-v0.3")
+    audit.add_argument("--resume", action="store_true", help="reuse matching completed walk-forward folds")
     benchmark.add_argument(
         "--tmu-platform",
         choices=("CPU", "CUDA"),
@@ -50,6 +55,14 @@ def parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = parser().parse_args()
+    if args.command == "risk-audit":
+        from .risk_audit import run_audit
+        try:
+            comparison = run_audit(args.csv, args.spec, args.output, args.resume)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+        print(comparison.to_string(index=False))
+        return
     if args.command == "download-tiingo":
         api_token = os.environ.get("TIINGO_API_TOKEN")
         if not api_token:

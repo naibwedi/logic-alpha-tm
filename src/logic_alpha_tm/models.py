@@ -54,10 +54,14 @@ class TMUSelector:
         specificity: float = 5.0,
         epochs: int = 20,
         platform: str = "CPU",
+        seed: int | None = None,
+        progress=None,
     ):
         self.params = clauses, threshold, specificity
         self.epochs = epochs
         self.platform = platform
+        self.seed = seed
+        self.progress = progress
         self.classes_: np.ndarray | None = None
         self.model = None
 
@@ -67,9 +71,13 @@ class TMUSelector:
         except ImportError as exc:
             raise RuntimeError("TMU is optional. Install the 'tm' extra before using --model tmu.") from exc
         self.classes_, encoded_y = np.unique(y, return_inverse=True)
-        self.model = TMClassifier(*self.params, platform=self.platform, weighted_clauses=True)
-        for _ in range(self.epochs):
+        self.model = TMClassifier(*self.params, platform=self.platform, weighted_clauses=True, seed=self.seed)
+        for epoch in range(self.epochs):
             self.model.fit(x.to_numpy(dtype=np.uint32), encoded_y.astype(np.uint32))
+            if self.platform == "CUDA" and "cuda" not in type(self.model.clause_banks[0]).__module__:
+                raise RuntimeError("CUDA requested but TMU fell back to CPU; refusing a mislabeled run")
+            if self.progress and ((epoch + 1) % 5 == 0 or epoch == 0 or epoch + 1 == self.epochs):
+                self.progress(f"  TMU epoch {epoch+1}/{self.epochs}")
         return self
 
     def predict_with_margin(self, x: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:

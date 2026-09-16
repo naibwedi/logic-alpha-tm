@@ -30,6 +30,12 @@ a never-touched-by-training walk-forward test stream.
 
 ## Quick start
 
+For the current development experiment, see the
+[v0.3 risk-filter audit](docs/RISK_AUDIT.md). It adds corrected accounting,
+conservative execution timing, a blend/half-blend decision, seeded TMU runs,
+live progress and fold resume. Earlier v0.2 benchmarks below are retained for
+provenance and use different metric and execution definitions.
+
 The demo uses a deterministic synthetic market so the repository is runnable
 without network access or unverifiable vendor data.
 

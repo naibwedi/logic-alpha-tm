@@ -1,5 +1,10 @@
 # Methodology
 
+This page describes the original v0.2 selector. The current development pilot
+uses the versioned [v0.3 risk-filter audit](RISK_AUDIT.md), which corrects
+Sharpe, drawdown, information timing, label cutoff and asset-turnover accounting.
+The two result sets are not directly comparable.
+
 ## Research question
 
 Can an interpretable Boolean classifier select a small strategy set better out
