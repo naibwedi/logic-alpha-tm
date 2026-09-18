@@ -166,3 +166,19 @@ class LogicAlphaTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_feature_set_v2_adds_only_the_predeclared_groups():
+    import pytest
+    from logic_alpha_tm.data import synthetic_prices
+    from logic_alpha_tm.features import build_features
+
+    prices = synthetic_prices(n=400)
+    v1 = build_features(prices)
+    v2 = build_features(prices, "v2")
+    added = sorted(set(v2.columns) - set(v1.columns))
+    assert added == ["SPY_TLT_corr_60", "SPY_ma_gap_50_200", "SPY_vol_ratio_20_100", "SPY_vol_ratio_5_60", "SPY_vs_ma_200"]
+    assert v2[v1.columns].equals(v1)
+    assert v2["SPY_TLT_corr_60"].dropna().between(-1, 1).all()
+    with pytest.raises(ValueError):
+        build_features(prices, "v9")

@@ -16,3 +16,5 @@ class ResearchConfig:
     smoothing: float = 1.0
     seed: int = 7
     tmu_platform: str = "CPU"
+    tmu_seed: int | None = None
+    feature_set: str = "v1"

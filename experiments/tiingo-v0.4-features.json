@@ -1,0 +1,30 @@
+{
+  "name": "tiingo-v0.4-feature-groups",
+  "evidence_tier": "current-vintage preliminary benchmark",
+  "data_kind": "Tiingo EOD current-vintage adjusted data from 2002 (development only)",
+  "universe": ["SPY", "QQQ", "IWM", "TLT"],
+  "question": "Do three predeclared feature groups (trend strength, volatility change, stock-bond correlation) improve strategy selection over the frozen v1 features, holding everything else fixed?",
+  "models": ["tmu", "logistic", "bernoulli"],
+  "development": {
+    "start": "2008-01-01",
+    "end": "2020-12-31"
+  },
+  "holdout": {
+    "start": "2021-01-01",
+    "end": "2025-12-31"
+  },
+  "robustness": [
+    {"feature_set": "v1", "tmu_seed": 1},
+    {"feature_set": "v1", "tmu_seed": 2},
+    {"feature_set": "v1", "tmu_seed": 3},
+    {"feature_set": "v2", "tmu_seed": 1},
+    {"feature_set": "v2", "tmu_seed": 2},
+    {"feature_set": "v2", "tmu_seed": 3}
+  ],
+  "decision_gates": {
+    "primary": "selector Sharpe exceeds equal-weight Sharpe after costs",
+    "comparison": "v2 beats v1 on every TMU seed, not on average",
+    "holdout_policy": "run only after development choices are frozen",
+    "evidence_limit": "current-vintage history cannot establish strict revision-point-in-time validity; one predeclared feature change is one trial and is counted as such"
+  }
+}

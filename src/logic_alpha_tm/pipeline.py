@@ -22,7 +22,7 @@ def run_research(
 ):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
-    features = build_features(prices)
+    features = build_features(prices, config.feature_set)
     streams = strategy_returns(prices, config.strategy_cost_bps)
     utilities = forward_utilities(streams, config.horizon, config.lambda_vol, config.lambda_drawdown)
     labels = strategy_labels(utilities, config.label_dead_zone)
