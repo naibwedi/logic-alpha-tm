@@ -125,6 +125,25 @@ harder and records a separate result folder.
 logic-alpha benchmark --csv data/raw/massive-prices.csv --phase holdout --unlock-holdout --output results/holdout-v0.2
 ```
 
+## LogicVol: volatility forecasting (Experiment A)
+
+Strategy selection showed no edge, so this experiment asks a narrower question
+with a more predictable target: can a Regression Tsetlin Machine forecast
+next-week volatility as well as standard models? The rules, baselines and
+pass/fail decision are frozen in `experiments/logicvol-v0.1.json` before any
+Tsetlin Machine result exists.
+
+```bash
+pip install -e ".[tm]"
+logic-alpha logicvol-cut --csv data/raw/tiingo-prices-2002.csv --output data/raw/logicvol-dev-prices.csv
+logic-alpha logicvol --csv data/raw/logicvol-dev-prices.csv --quick --assets SPY   # smoke test
+logic-alpha logicvol --csv data/raw/logicvol-dev-prices.csv --resume              # the real run
+```
+
+The price file must start in 2002. Only the development period (2008 to 2020)
+is used; prices after 2020-12-31 are dropped before anything is computed. The
+private Colab route is `notebooks/logicvol_colab.ipynb`.
+
 ## Outputs
 
 - `summary.json`: performance and experimental settings

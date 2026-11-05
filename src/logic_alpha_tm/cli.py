@@ -40,6 +40,19 @@ def parser() -> argparse.ArgumentParser:
         default="CPU",
         help="TMU execution backend; use CUDA only on a configured NVIDIA runtime",
     )
+    vol = sub.add_parser("logicvol", help="run LogicVol Experiment A (volatility forecasting, development only)")
+    vol.add_argument("--csv", required=True)
+    vol.add_argument("--spec", default="experiments/logicvol-v0.1.json")
+    vol.add_argument("--output", default="results/logicvol-v0.1")
+    vol.add_argument("--assets", nargs="+", help="default: the primary and robustness assets in the spec")
+    vol.add_argument("--resume", action="store_true", help="reuse matching completed TM folds")
+    vol.add_argument("--tmu-platform", choices=("CPU", "CUDA"), default="CPU")
+    vol.add_argument("--quick", action="store_true", help="smoke test: 1 seed, 1 setting, 2 epochs, 3 folds; not a valid result")
+    vol.add_argument("--skip-tm", action="store_true", help="baselines only; no decision is made")
+    cut = sub.add_parser("logicvol-cut", help="write a price copy that ends at the development end")
+    cut.add_argument("--csv", required=True)
+    cut.add_argument("--spec", default="experiments/logicvol-v0.1.json")
+    cut.add_argument("--output", default="data/raw/logicvol-dev-prices.csv")
     download = sub.add_parser("download-massive", help="download licensed unadjusted daily bars")
     download.add_argument("--start", required=True, help="inclusive date (YYYY-MM-DD)")
     download.add_argument("--end", required=True, help="inclusive date (YYYY-MM-DD)")
@@ -55,6 +68,18 @@ def parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = parser().parse_args()
+    if args.command in ("logicvol", "logicvol-cut"):
+        from . import logicvol
+        try:
+            if args.command == "logicvol-cut":
+                print(json.dumps(logicvol.cut_to_development(args.csv, args.spec, args.output), indent=2))
+                return
+            result = logicvol.run(args.csv, args.spec, args.output, args.assets, args.resume,
+                                  args.tmu_platform, args.quick, args.skip_tm)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+        print(json.dumps(result["decision"], indent=2))
+        return
     if args.command == "risk-audit":
         from .risk_audit import run_audit
         try:

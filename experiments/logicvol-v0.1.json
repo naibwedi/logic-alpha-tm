@@ -1,0 +1,120 @@
+{
+  "engine": "logicvol-v0.1",
+  "name": "LogicVol Experiment A: can a Regression Tsetlin Machine forecast next-week volatility?",
+  "frozen_on": "2026-11-05",
+  "hypothesis": "A Regression Tsetlin Machine on train-only Boolean features forecasts next-week SPY volatility better than simple historical estimates and close to a HAR-style model.",
+  "data": {
+    "source": "Tiingo current-vintage adjusted daily closes (internal use only)",
+    "tickers": [
+      "SPY",
+      "QQQ",
+      "IWM",
+      "TLT"
+    ],
+    "first_date": "2002-07-26",
+    "primary_asset": "SPY",
+    "robustness_assets": [
+      "QQQ",
+      "IWM",
+      "TLT"
+    ]
+  },
+  "target": {
+    "definition": "log of annualised realised volatility over the next 5 sessions: y_t = 0.5 * log(252 * mean(r_{t+1}^2 .. r_{t+5}^2))",
+    "returns": "daily close-to-close log returns of adjusted closes",
+    "decision_time": "after the close of day t; every feature uses data up to and including day t",
+    "horizon_sessions": 5,
+    "note": "Daily-return volatility, not intraday realised volatility, so the benchmark is called HAR-style, not HAR-RV."
+  },
+  "features": {
+    "groups": {
+      "har_components": "realised volatility over the last 1, 5 and 22 sessions (and 66), in logs",
+      "vol_change": "5-session vol divided by 66-session vol; 22-session vol divided by 66-session vol",
+      "returns": "5- and 22-session returns; drawdown from the 100-session high; absolute return today",
+      "cross_asset": "TLT 22-session vol; 60-session SPY-TLT return correlation; IWM minus SPY 22-session vol"
+    },
+    "booleanisation": "thermometer encoding at train-only deciles (q10..q90), refit on each training window",
+    "excluded_until_v0.2": "VIX (not in the current data; it is required as a baseline before any claim of practical usefulness)"
+  },
+  "models": {
+    "historical_22": "forecast = log realised vol of the last 22 sessions",
+    "ewma": "RiskMetrics exponentially weighted variance, lambda = 0.94",
+    "har_style": "OLS of y on log vol over 1, 5 and 22 sessions, fit on the training window",
+    "ridge_boolean": "ridge regression on the same Boolean features the TM sees (isolates the model from the encoding)",
+    "tm_regression": "tmu TMRegressor on the Boolean features"
+  },
+  "tm_settings": {
+    "candidates": [
+      {
+        "clauses": 500,
+        "T": 1000,
+        "s": 3.0
+      },
+      {
+        "clauses": 1000,
+        "T": 2000,
+        "s": 5.0
+      },
+      {
+        "clauses": 2000,
+        "T": 4000,
+        "s": 10.0
+      }
+    ],
+    "epochs": 30,
+    "selection": "per fold, choose the candidate with the lowest QLIKE on the last 20% of that fold's training window; the test fold is never used for selection",
+    "seeds": [
+      7,
+      19,
+      41
+    ],
+    "platform": "CPU",
+    "target_scaling": "y is min-max scaled on the training window only; the scaler is stored with each fold",
+    "weighted_clauses": true,
+    "fold_seed": "seed + fold index (same convention as risk-audit-v0.3)"
+  },
+  "evaluation": {
+    "development": {
+      "start": "2008-01-01",
+      "end": "2020-12-31"
+    },
+    "holdout": {
+      "start": "2021-01-01",
+      "end": "2025-12-31",
+      "status": "locked; run once only after this file is final"
+    },
+    "walk_forward": "expanding window, minimum 756 sessions of training, refit every 126 sessions",
+    "purge": "drop the last 5 training rows before each test fold, because their targets overlap the test period",
+    "metrics": {
+      "primary": "QLIKE on variance: rv2/h2 - log(rv2/h2) - 1. Models fit to mean log-volatility (har_style, ridge_boolean, tm_regression) are converted to a variance forecast with the log-normal correction h2 = exp(2*yhat + 2*s2), where s2 is the residual variance on the held-back last 20% of each training window (model fit on the first part, with the purge gap). historical_22 and ewma are variance estimators and are not corrected. Uncorrected QLIKE is also reported.",
+      "secondary": [
+        "MSE of log volatility",
+        "MAE of annualised volatility",
+        "Mincer-Zarnowitz slope and intercept",
+        "recall of the top-decile volatility weeks"
+      ]
+    },
+    "walk_forward_min_train": 756,
+    "walk_forward_test_size": 126,
+    "purge_sessions": 5
+  },
+  "implementation": {
+    "ridge_alpha": 1.0,
+    "variance_floor": 1e-12,
+    "ewma_seed": "mean of the first 22 squared returns",
+    "data_file": "a development-only copy made with `logic-alpha logicvol-cut`; the runner also drops any row after the development end before computing anything",
+    "amended_before_any_run": "2026-11-05: added weighted_clauses (unweighted clauses cap the output at the clause count, below T for two candidates), the numeric walk-forward fields, ridge_alpha, variance floor and fold seed rule. No results existed when these were added.",
+    "amendment_2": "2026-11-05: added the log-normal correction for QLIKE. Found after one baselines-only run (--skip-tm), in which har_style had the lowest MSE of log volatility but a worse QLIKE than ewma because a mean-log forecast underestimates variance. The correction is the textbook one, applied identically to all log-fitted models, and was decided before any Tsetlin Machine result existed."
+  },
+  "decision_rule": {
+    "pass": [
+      "median QLIKE of the 3 TM seeds is lower than historical_22 and lower than ewma",
+      "median QLIKE of the 3 TM seeds is at most 5% worse than har_style",
+      "every TM seed is at most 10% worse than har_style"
+    ],
+    "on_pass": "run Experiment B (clause extraction and stability across folds and seeds), then Experiment C (volatility-targeted exposure backtest)",
+    "on_fail": "write the result in RESULTS.md and stop; no tuning on the test folds and no integration work"
+  },
+  "selection_policy": "Report every seed and every asset. Do not pick the best seed. The robustness assets are reported but do not decide pass or fail.",
+  "limitations": "Current-vintage adjusted data; daily-return volatility is a noisy proxy for true volatility; no VIX or implied-volatility baseline in v0.1; the development period was already used by earlier LogicAlpha experiments for strategy selection, not for volatility."
+}

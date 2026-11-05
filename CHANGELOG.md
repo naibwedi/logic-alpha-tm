@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added LogicVol Experiment A (`logic-alpha logicvol`): a Regression Tsetlin
+  Machine forecasting next-week log volatility against historical, EWMA,
+  HAR-style and Boolean-ridge baselines, with a frozen pass/fail rule, purged
+  walk-forward folds, per-fold checkpoints and a log-normal correction for QLIKE.
+- Added `logic-alpha logicvol-cut` to write a price copy that ends at the
+  development end, and a Colab notebook for the private run.
 - Added a free Tiingo EOD adapter with raw/adjusted audit files, corporate
   actions, availability metadata, coverage checks, and internal-use warnings.
 - Added a separate preliminary Tiingo experiment specification so current-vintage
